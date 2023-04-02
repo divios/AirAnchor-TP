@@ -30,6 +30,6 @@ setup(
     data_files=data_files,
     entry_points={
         'console_scripts': [
-            'location-tp-python = sawtooth_location_key.main:main'
+            'location-tp = sawtooth_location_key.main:main'
         ]
     })
