@@ -51,40 +51,29 @@ class LocationKeyTransactionHandler(TransactionHandler):
         
         
 def _unpack_transaction(transaction):
-    key, firm, data = _decode_transaction(transaction)
+    key, hash, data = _decode_transaction(transaction)
     
     _validate_key(key)
-    _validate_firm(firm)
     _validate_data(data)
-    _validate_firm_data(key, firm, data)
-    
-    hash = _get_transaction_hash(transaction)
-    
+        
     return key, hash, data
     
     
 def _decode_transaction(transaction):
+    key = transaction.header.signer_public_key
+    hash = transaction.header.payload_sha512
+    
     try:
         content = cbor.loads(transaction.payload)
     except Exception as e:
         raise InvalidTransaction('Invalid payload serialization') from e
 
     try:
-        key = content['key']
-    except AttributeError:
-        raise InvalidTransaction('public key is required') from AttributeError
-
-    try:
-        firm = content['firm']
-    except AttributeError:
-        raise InvalidTransaction('firm is required') from AttributeError
-
-    try:
         data = content['data']
     except AttributeError:
         raise InvalidTransaction('data is required') from AttributeError
 
-    return key, firm, data
+    return key, data
 
 
 def _validate_key(key):
@@ -92,7 +81,7 @@ def _validate_key(key):
         raise InvalidTransaction('key must be an string')
 
 
-def _validate_firm(firm):
+def _validate_firm(firm):               # Firm is already validated by the validator
     if not isinstance(firm, str):
         raise InvalidTransaction('firm must be an string')
     
@@ -101,14 +90,6 @@ def _validate_data(data):
     if not isinstance(data, str):
         raise InvalidTransaction('firm must be an string')
 
-
-def _validate_firm_data(key, firm, data):
-    pass       # Validate here that the firm corresponds with the data
-
-
-def _get_transaction_hash(tr):
-    return tr.header.payload_sha512
-        
         
 def _get_state_data(name, context):
     address = make_location_key_address(name)
