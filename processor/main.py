@@ -4,7 +4,7 @@ import sys
 import argparse
 import pkg_resources
 
-from handler import LocationKeyTransactionHandler
+from sawtooth_location_key.processor.handler import LocationKeyTransactionHandler
 
 from sawtooth_sdk.processor.core import TransactionProcessor
 from sawtooth_sdk.processor.log import init_console_logging

@@ -13,18 +13,14 @@ from sawtooth_sdk.processor.exceptions import InternalError
 LOGGER = logging.getLogger(__name__)
 
 
-VALID_VERBS = 'store', 'inc', 'dec'
-
-MAX_NAME_LENGTH = 20
-
 FAMILY_NAME = 'locationKey'
 
-INTKEY_ADDRESS_PREFIX = hashlib.sha512(
+LOCATION_KEY_ADDRESS_PREFIX = hashlib.sha512(
     FAMILY_NAME.encode('utf-8')).hexdigest()[0:6]
 
 
-def make_intkey_address(name):
-    return INTKEY_ADDRESS_PREFIX + hashlib.sha512(
+def make_location_key_address(name):
+    return LOCATION_KEY_ADDRESS_PREFIX + hashlib.sha512(
         name.encode('utf-8')).hexdigest()[-64:]
 
 
@@ -42,10 +38,107 @@ class LocationKeyTransactionHandler(TransactionHandler):
 
     @property
     def namespaces(self):
-        return [INTKEY_ADDRESS_PREFIX]
+        return [LOCATION_KEY_ADDRESS_PREFIX]
 
     def apply(self, transaction, context):
-        pass
+        key, hash, data = _unpack_transaction(transaction)
+                
+        state = _get_state_data(key, context)
+        
+        updated_state = _do_logic(key, hash, data, state)
+        
+        _set_state_data(key, updated_state, context)
+        
+        
+def _unpack_transaction(transaction):
+    key, firm, data = _decode_transaction(transaction)
     
-def _unpack_transaction()
+    _validate_key(key)
+    _validate_firm(firm)
+    _validate_data(data)
+    _validate_firm_data(key, firm, data)
+    
+    hash = _get_transaction_hash(transaction)
+    
+    return key, hash, data
+    
+    
+def _decode_transaction(transaction):
+    try:
+        content = cbor.loads(transaction.payload)
+    except Exception as e:
+        raise InvalidTransaction('Invalid payload serialization') from e
 
+    try:
+        key = content['key']
+    except AttributeError:
+        raise InvalidTransaction('public key is required') from AttributeError
+
+    try:
+        firm = content['firm']
+    except AttributeError:
+        raise InvalidTransaction('firm is required') from AttributeError
+
+    try:
+        data = content['data']
+    except AttributeError:
+        raise InvalidTransaction('data is required') from AttributeError
+
+    return key, firm, data
+
+
+def _validate_key(key):
+    if not isinstance(key, str):
+        raise InvalidTransaction('key must be an string')
+
+
+def _validate_firm(firm):
+    if not isinstance(firm, str):
+        raise InvalidTransaction('firm must be an string')
+    
+    
+def _validate_data(data):
+    if not isinstance(data, str):
+        raise InvalidTransaction('firm must be an string')
+
+
+def _validate_firm_data(key, firm, data):
+    pass       # Validate here that the firm corresponds with the data
+
+
+def _get_transaction_hash(tr):
+    return tr.header.payload_sha512
+        
+        
+def _get_state_data(name, context):
+    address = make_location_key_address(name)
+
+    state_entries = context.get_state([address])
+
+    try:
+        return cbor.loads(state_entries[0].data)
+    except IndexError:
+        return {}
+    except Exception as e:
+        raise InternalError('Failed to load state data') from e
+    
+    
+def _do_logic(key, hash, data, state):
+    msg = 'Adding location for key {k} with hash {h} and data{d}'.format(k=key, h=hash, d=data)
+    LOGGER.debug(msg)
+    
+    updated = dict(state.items())
+    updated[hash] = data
+
+    return updated
+
+
+def _set_state_data(name, state, context):
+    address = make_location_key_address(name)
+
+    encoded = cbor.dumps(state)
+
+    addresses = context.set_state({address: encoded})
+
+    if not addresses:
+        raise InternalError('State error')
