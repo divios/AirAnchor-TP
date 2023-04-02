@@ -61,7 +61,7 @@ def _unpack_transaction(transaction):
     
 def _decode_transaction(transaction):
     key = transaction.header.signer_public_key
-    hash = transaction.header.payload_sha512
+    hash = transaction.header_signature
     
     try:
         content = cbor.loads(transaction.payload)
@@ -73,7 +73,7 @@ def _decode_transaction(transaction):
     except AttributeError:
         raise InvalidTransaction('data is required') from AttributeError
 
-    return key, data
+    return key, hash, data
 
 
 def _validate_key(key):
