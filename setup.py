@@ -21,7 +21,7 @@ setup(
     description='Sawtooth Location Python',
     author='Hyperledger Sawtooth',
     url='https://github.com/hyperledger/sawtooth-sdk-python',
-    packages=find_packages('app'),
+    packages=find_packages(),
     install_requires=[
         "cbor",
         "colorlog",
@@ -30,6 +30,6 @@ setup(
     data_files=data_files,
     entry_points={
         'console_scripts': [
-            'location-tp-python = app.main:main'
+            'location-tp-python = sawtooth_location_key.main:main'
         ]
     })
