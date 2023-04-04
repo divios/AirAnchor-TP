@@ -18,10 +18,8 @@ FAMILY_NAME = 'locationKey'
 LOCATION_KEY_ADDRESS_PREFIX = hashlib.sha512(
     FAMILY_NAME.encode('utf-8')).hexdigest()[0:6]
 
-
-def make_location_key_address(name):
-    return LOCATION_KEY_ADDRESS_PREFIX + hashlib.sha512(
-        name.encode('utf-8')).hexdigest()[-64:]
+def make_location_key_address(key, hash):
+    return LOCATION_KEY_ADDRESS_PREFIX + key[:6] + hash[-58:]
 
 
 class LocationKeyTransactionHandler(TransactionHandler):
@@ -42,12 +40,14 @@ class LocationKeyTransactionHandler(TransactionHandler):
 
     def apply(self, transaction, context):
         key, hash, data = _unpack_transaction(transaction)
+        
+        address = make_location_key_address(key, hash)
                 
-        state = _get_state_data(key, context)
+        state = _get_state_data(address, context)
         
         updated_state = _do_logic(key, hash, data, state)
         
-        _set_state_data(key, updated_state, context)
+        _set_state_data(address, updated_state, context)
         
         
 def _unpack_transaction(transaction):
@@ -61,7 +61,7 @@ def _unpack_transaction(transaction):
     
 def _decode_transaction(transaction):
     key = transaction.header.signer_public_key
-    hash = transaction.header_signature
+    hash = transaction.header.payload_sha512
     
     try:
         content = cbor.loads(transaction.payload)
@@ -72,7 +72,7 @@ def _decode_transaction(transaction):
         data = content['data']
     except AttributeError:
         raise InvalidTransaction('data is required') from AttributeError
-
+    
     return key, hash, data
 
 
@@ -91,9 +91,7 @@ def _validate_data(data):
         raise InvalidTransaction('firm must be an string')
 
         
-def _get_state_data(name, context):
-    address = make_location_key_address(name)
-
+def _get_state_data(address, context):
     state_entries = context.get_state([address])
 
     try:
@@ -114,9 +112,7 @@ def _do_logic(key, hash, data, state):
     return updated
 
 
-def _set_state_data(name, state, context):
-    address = make_location_key_address(name)
-
+def _set_state_data(address, state, context):
     encoded = cbor.dumps(state)
 
     addresses = context.set_state({address: encoded})
