@@ -26,6 +26,7 @@ setup(
         "cbor",
         "colorlog",
         "sawtooth-sdk",
+        "requests"
     ],
     data_files=data_files,
     entry_points={
