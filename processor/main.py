@@ -4,7 +4,7 @@ import sys
 import argparse
 import pkg_resources
 
-from sawtooth_location_key.handler import LocationKeyTransactionHandler
+from sawtooth_location_key.handler import AirAnchorTransactionHandler
 
 from sawtooth_sdk.processor.core import TransactionProcessor
 from sawtooth_sdk.processor.log import init_console_logging
@@ -29,6 +29,11 @@ def parse_args(args):
                         action='count',
                         default=0,
                         help='Increase output sent to stderr')
+    
+    parser.add_argument('--ca-pub',
+                        default='ca_pub',
+                        help='The public key of the CA (Certificate Authority)'
+                        )
 
     try:
         version = pkg_resources.get_distribution(DISTRIBUTION_NAME).version
@@ -52,11 +57,11 @@ def main(args=None):
     processor = None
     try:
         processor = TransactionProcessor(url=opts.connect)
-        log_config = get_log_config(filename="intkey_log_config.toml")
+        log_config = get_log_config(filename="airAnchor_log_config.toml")
 
         # If no toml, try loading yaml
         if log_config is None:
-            log_config = get_log_config(filename="intkey_log_config.yaml")
+            log_config = get_log_config(filename="airAnchor_log_config.yaml")
 
         if log_config is not None:
             log_configuration(log_config=log_config)
@@ -65,13 +70,13 @@ def main(args=None):
             # use the transaction processor zmq identity for filename
             log_configuration(
                 log_dir=log_dir,
-                name="locationKey-" + str(processor.zmq_id)[2:-1])
+                name="airAnchor-" + str(processor.zmq_id)[2:-1])
 
         init_console_logging(verbose_level=opts.verbose)
 
         # The prefix should eventually be looked up from the
         # validator's namespace registry.
-        handler = LocationKeyTransactionHandler()
+        handler = AirAnchorTransactionHandler(ca_pub=opts.ca_pub)
 
         processor.add_handler(handler)
 
