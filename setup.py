@@ -8,19 +8,19 @@ data_files = []
 
 if os.path.exists("/etc/default"):
     data_files.append(
-        ('/etc/default', ['packaging/systemd/sawtooth-location-tp-python']))
+        ('/etc/default', ['packaging/systemd/air-anchor-tp']))
 
 if os.path.exists("/lib/systemd/system"):
     data_files.append(
         ('/lib/systemd/system',
-         ['packaging/systemd/location-tp-python.service']))
+         ['packaging/systemd/air-anchor-tp.service']))
 
 setup(
-    name='sawtooth_location_key',
+    name='air_anchor_tp',
     version='1.0',
-    description='Sawtooth Location Python',
-    author='Hyperledger Sawtooth',
-    url='https://github.com/hyperledger/sawtooth-sdk-python',
+    description='Air Anchor Transaction Processor',
+    author='divios',
+    url='',
     packages=find_packages(),
     install_requires=[
         "cbor",
@@ -31,6 +31,6 @@ setup(
     data_files=data_files,
     entry_points={
         'console_scripts': [
-            'location-tp = sawtooth_location_key.main:main'
+            'air-anchor-tp = air_anchor_tp.main:main'
         ]
     })

@@ -4,7 +4,7 @@ import sys
 import argparse
 import pkg_resources
 
-from sawtooth_location_key.handler import AirAnchorTransactionHandler
+from air_anchor_tp.handler import AirAnchorTransactionHandler
 
 from sawtooth_sdk.processor.core import TransactionProcessor
 from sawtooth_sdk.processor.log import init_console_logging
