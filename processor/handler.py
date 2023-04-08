@@ -64,6 +64,12 @@ class AirAnchorTransactionHandler(TransactionHandler):
         
         updated_state = _do_logic(key, hash, data, state)
         
+        context.add_event(
+            FAMILY_NAME + "/create", {
+                'key': key,
+                'hash': hash
+        })
+        
         _set_state_data(address, updated_state, context)
         
         
@@ -149,7 +155,7 @@ def _do_logic(key, hash, data, state):
     
     updated = dict(state.items())
     updated[hash] = data
-
+    
     return updated
 
 
