@@ -24,6 +24,9 @@ FAMILY_VERSION = "1.0"
 LOCATION_KEY_ADDRESS_PREFIX = hashlib.sha512(
     FAMILY_NAME.encode('utf-8')).hexdigest()[0:6]
 
+def _sha512(data):
+    return hashlib.sha512(data).hexdigest()
+
 def make_location_key_address(key, hash):
     return LOCATION_KEY_ADDRESS_PREFIX + key[:6] + hash[-58:]
 
@@ -85,7 +88,7 @@ class AirAnchorTransactionHandler(TransactionHandler):
     
 def _decode_transaction(transaction):
     key = transaction.header.signer_public_key
-    hash = transaction.header.payload_sha512
+    hash = _sha512(transaction.payload)
     
     try:
         content = cbor.loads(transaction.payload)
