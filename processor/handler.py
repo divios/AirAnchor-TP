@@ -129,7 +129,7 @@ def _validate_key(key):
 def _validate_firm(pub, csr, csr_firm):              
     context = create_context('secp256k1')
     
-    if not context.verify(csr_firm, cbor.dumps(csr), pub):
+    if not context.verify(csr_firm, csr.encode('ascii'), pub):
         raise InvalidTransaction('csr firm is not valid')
     
     
