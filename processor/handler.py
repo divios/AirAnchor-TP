@@ -152,10 +152,7 @@ def _get_state_data(address, context):
 def _do_logic(key, hash, data, state):
     msg = 'Adding location for key {k} with hash {h} and data{d}'.format(k=key, h=hash, d=data)
     LOGGER.debug(msg)
-    
-    res = requests.get("http://192.168.1.169:8086")
-    LOGGER.debug(res.content)
-    
+        
     updated = dict(state.items())
     updated[hash] = data
     
