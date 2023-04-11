@@ -14,4 +14,4 @@ COPY ./setup.py  /code/setup.py
 RUN python3 setup.py clean --all \
     && python3 setup.py build \
     && python3 setup.py install \
-    && cp -r ./processor /usr/local/lib/python3.6/site-packages/sawtooth_location_key
+    && cp -r ./processor /usr/local/lib/python3.6/site-packages/air_anchor_tp
