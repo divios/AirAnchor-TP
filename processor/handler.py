@@ -66,13 +66,7 @@ class AirAnchorTransactionHandler(TransactionHandler):
         state = _get_state_data(address, context)
         
         updated_state = _do_logic(key, hash, data, state)
-        
-        context.add_event(
-            FAMILY_NAME + "/create", {
-                'key': key,
-                'hash': hash
-        })
-        
+               
         _set_state_data(address, updated_state, context)
         
         
@@ -87,13 +81,17 @@ class AirAnchorTransactionHandler(TransactionHandler):
     
     
 def _decode_transaction(transaction):
-    key = transaction.header.signer_public_key
     hash = _sha512(transaction.payload)
     
     try:
         content = cbor.loads(transaction.payload)
     except Exception as e:
         raise InvalidTransaction('Invalid payload serialization') from e
+    
+    try:
+        key = content['pub_key']
+    except AttributeError:
+        raise InvalidTransaction('key is required') from AttributeError
     
     try:
         csr = content['csr']
