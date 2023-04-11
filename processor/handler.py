@@ -33,7 +33,7 @@ def make_location_key_address(key, hash):
 
 def get_ca_pub(pub_key):    
     with open(pub_key, "r") as f:
-        key_hex = f.read()
+        key_hex = f.read().strip()
 
     return Secp256k1PublicKey.from_hex(key_hex)
     
