@@ -3,8 +3,10 @@
 import sys
 import argparse
 import pkg_resources
+import os
 
 from air_anchor_tp.handler import AirAnchorTransactionHandler
+from air_anchor_tp.data import MongoRepo
 
 from sawtooth_sdk.processor.core import TransactionProcessor
 from sawtooth_sdk.processor.log import init_console_logging
@@ -14,6 +16,10 @@ from sawtooth_sdk.processor.config import get_log_dir
 
 
 DISTRIBUTION_NAME = 'sawtooth-locationKey'
+
+MONGO_URL = os.getenv('MONGO_DATABASE_URL', 'localhost:27017')
+MONGO_DATABASE = os.getenv('MONGO_DATABASE', 'AirAnchor')
+MONGO_COLLECTION = os.getenv('MONGO_COLLECTION', 'locations')
 
 
 def parse_args(args):
@@ -73,10 +79,12 @@ def main(args=None):
                 name="airAnchor-" + str(processor.zmq_id)[2:-1])
 
         init_console_logging(verbose_level=opts.verbose)
-
+        
+        
+        mongoRepo = MongoRepo(MONGO_URL, MONGO_DATABASE, MONGO_COLLECTION)
         # The prefix should eventually be looked up from the
         # validator's namespace registry.
-        handler = AirAnchorTransactionHandler(ca_pub=opts.ca_pub)
+        handler = AirAnchorTransactionHandler(ca_pub=opts.ca_pub, mongo_repo=mongoRepo)
 
         processor.add_handler(handler)
 

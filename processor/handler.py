@@ -14,6 +14,7 @@ from sawtooth_signing import create_context
 from sawtooth_signing import CryptoFactory
 from sawtooth_signing import ParseError
 
+from processor.data import MongoRepo
 
 LOGGER = logging.getLogger(__name__)
 
@@ -40,8 +41,9 @@ def get_ca_pub(pub_key):
 
 class AirAnchorTransactionHandler(TransactionHandler):
     
-    def __init__(self, ca_pub):
+    def __init__(self, ca_pub, mongo_repo: MongoRepo):
         self._ca_pub = get_ca_pub(ca_pub)
+        self._mongo_repo = mongo_repo
     
     # Disable invalid-overridden-method. The sawtooth-sdk expects these to be
     # properties.
@@ -68,6 +70,8 @@ class AirAnchorTransactionHandler(TransactionHandler):
         updated_state = _do_logic(key, hash, data, state)
                
         _set_state_data(address, updated_state, context)
+        
+        _update_mongo_document(self._mongo_repo, hash)
         
         
     def _unpack_transaction(self, transaction):
@@ -164,3 +168,6 @@ def _set_state_data(address, state, context):
 
     if not addresses:
         raise InternalError('State error')
+
+def _update_mongo_document(mongo_repo: MongoRepo, hash: str):
+    mongo_repo.set_confirmed(hash)

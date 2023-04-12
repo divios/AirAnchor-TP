@@ -26,7 +26,9 @@ setup(
         "cbor",
         "colorlog",
         "sawtooth-sdk",
-        "requests"
+        "requests",
+        "pymongo",
+        "protobuf==3.20.*"
     ],
     data_files=data_files,
     entry_points={
