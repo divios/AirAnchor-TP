@@ -68,6 +68,12 @@ class AirAnchorTransactionHandler(TransactionHandler):
         state = _get_state_data(address, context)
         
         updated_state = _do_logic(key, hash, data, state)
+        
+        context.add_event(
+            FAMILY_NAME + "/create", [
+                ['key', key],
+                ['hash', hash]
+        ])
                
         _set_state_data(address, updated_state, context)
         
