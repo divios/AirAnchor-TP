@@ -71,7 +71,7 @@ class AirAnchorTransactionHandler(TransactionHandler):
                
         _set_state_data(address, updated_state, context)
         
-        _update_mongo_document(self._mongo_repo, hash)
+        # _update_mongo_document(self._mongo_repo, hash)
         
         
     def _unpack_transaction(self, transaction):
