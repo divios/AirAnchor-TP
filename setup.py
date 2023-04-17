@@ -28,6 +28,7 @@ setup(
         "sawtooth-sdk",
         "requests",
         "pymongo",
+        "dacite",
         "protobuf==3.20.*"
     ],
     data_files=data_files,
