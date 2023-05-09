@@ -27,7 +27,6 @@ setup(
         "colorlog",
         "sawtooth-sdk",
         "requests",
-        "pymongo",
         "dacite",
         "protobuf==3.20.*"
     ],
