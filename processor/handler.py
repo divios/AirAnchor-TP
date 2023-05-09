@@ -15,7 +15,6 @@ from sawtooth_signing import CryptoFactory
 from sawtooth_signing import ParseError
 
 from processor.protos import *
-from processor.data import MongoRepo
 
 LOGGER = logging.getLogger(__name__)
 
@@ -49,9 +48,8 @@ def get_ca_pub(pub_key):
 
 class AirAnchorTransactionHandler(TransactionHandler):
     
-    def __init__(self, ca_pub, mongo_repo: MongoRepo):
+    def __init__(self, ca_pub):
         self._ca_pub = get_ca_pub(ca_pub)
-        self._mongo_repo = mongo_repo
     
     # Disable invalid-overridden-method. The sawtooth-sdk expects these to be
     # properties.
@@ -103,8 +101,9 @@ def _decode_transaction(transaction) -> TransactionPayload:
     
 def _validate_certificate(payload: TransactionPayload, ca_pub: Secp256k1PublicKey):    
     certificate_request = payload.certificate_request
-        
-    if not CONTEXT.verify(payload.certificate_authority_signature, certificate_request.serialize(), ca_pub):
+                    
+    if not CONTEXT.verify(payload.certificate_authority_response.signature, 
+                          certificate_request.serialize().encode(), ca_pub):
         raise InvalidTransaction('Invalid certificate signature')
         
 def _get_state_data(address, context):

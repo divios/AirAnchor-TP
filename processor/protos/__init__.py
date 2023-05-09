@@ -1,6 +1,6 @@
 
 from dataclasses import dataclass, asdict
-import cbor
+import json
 import secrets
 from hashlib import sha512
 from sawtooth_signing import Signer
@@ -16,7 +16,7 @@ class CertificateRequestHeader():
         return asdict(self)
     
     def serialize(self):
-        return cbor.dumps(self.as_dict())
+        return json.dumps(self.as_dict(), separators=(',', ':'))
 
 @dataclass
 class CertificateRequest():
@@ -31,7 +31,7 @@ class CertificateRequest():
         return asdict(self)
     
     def serialize(self):
-        return cbor.dumps(self.as_dict())
+        return json.dumps(self.as_dict(), separators=(',', ':'))
     
     @staticmethod
     def create(distinguied_name: str, signer: Signer):
@@ -46,6 +46,11 @@ class CertificateRequest():
             header=header,
             signature=signer.sign(header.serialize())
         )
+        
+@dataclass
+class CertificateResponse():
+    ca_pub_key: str
+    signature: str
     
 @dataclass
 class TransactionRequestHeader():
@@ -58,7 +63,7 @@ class TransactionRequestHeader():
         return asdict(self)
 
     def serialize(self):
-        return cbor.dumps(self.as_dict())
+        return json.dumps(self.as_dict(), separators=(',', ':'))
     
     @staticmethod
     def create(sender_public_key: str, 
@@ -83,7 +88,7 @@ class TransactionRequest():
         return asdict(self)
     
     def serialize(self):
-        return cbor.dumps(self.as_dict())
+        return json.dumps(self.as_dict(), separators=(',', ':'))
     
     @staticmethod
     def from_dict(dict):
@@ -91,7 +96,7 @@ class TransactionRequest():
     
     @staticmethod
     def deserialize(encoded):
-        decoded = cbor.loads(encoded)
+        decoded = json.loads(encoded)
         
         return TransactionRequest.from_dict(decoded)
     
@@ -119,7 +124,7 @@ class TransactionRequest():
 class TransactionPayload():
     batcher_public_key: str
     certificate_request: CertificateRequest
-    certificate_authority_signature: str
+    certificate_authority_response: CertificateResponse
     nonce: str
     data: str
     
@@ -131,10 +136,10 @@ class TransactionPayload():
         return asdict(self)
     
     def serialize(self):
-        return cbor.dumps(self.as_dict())
+        return json.dumps(self.as_dict(), separators=(',', ':'))
     
     def hash(self):
-        return sha512(self.serialize()).hexdigest()
+        return sha512(self.serialize().encode()).hexdigest()
     
     @staticmethod
     def from_dict(dict):
@@ -142,7 +147,7 @@ class TransactionPayload():
     
     @staticmethod
     def deserialize(encoded):
-        decoded = cbor.loads(encoded)
+        decoded = json.loads(encoded)
         
         return TransactionPayload.from_dict(decoded)
     
@@ -156,7 +161,7 @@ class TransactionPayload():
         return TransactionPayload(
             batcher_public_key=signer.get_public_key().as_hex(),
             certificate_request=certificate_request,
-            certificate_authority_signature=certificate_authority_signature,
+            certificate_authority_response=CertificateResponse("", certificate_authority_signature),
             nonce=secrets.token_hex(),
             data=data
         )
